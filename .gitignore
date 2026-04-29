@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual env
+venv/
+.env/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Arduino build files
+Ai-write-code-test/*.bin
+Ai-write-code-test/*.elf
+
+# Logs
+*.log
