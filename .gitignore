@@ -17,3 +17,6 @@ Ai-write-code-test/*.elf
 
 # Logs
 *.log
+
+#my test file for read functionality
+main.ino
