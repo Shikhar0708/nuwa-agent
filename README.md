@@ -5,25 +5,28 @@
 ![ESP32](https://img.shields.io/badge/ESP32-Arduino-green)
 ![CLI](https://img.shields.io/badge/Interface-CLI-black)
 
-Nuwa is an **intent-driven AI agent** that transforms natural language into **working ESP32 Arduino code**, with built-in validation, guardrails, and one-command deployment.
+Nuwa is a **CLI-based AI assistant for ESP32 development** that generates, modifies, and validates Arduino code using a structured pipeline.
 
-> generate → sanitize → validate → compile → deploy
+Instead of returning raw LLM output, Nuwa applies basic guardrails and validation to make generated embedded code more usable.
+
+    generate → sanitize → validate → (optional) compile → upload
 
 ---
 
 ## 📑 Table of Contents
 
-* [🚀 Why Nuwa](#-why-nuwa)
-* [⚙️ Features](#️-features)
-* [🏗️ Architecture](#️-architecture)
-* [📂 Project Structure](#-project-structure)
-* [⚡ Getting Started](#-getting-started)
-* [📦 Prerequisites](#-prerequisites)
-* [⚙️ Configuration](#️-configuration)
-* [▶️ Run Nuwa](#️-run-nuwa)
-* [💡 Example Usage](#-example-usage)
-* [🧠 Key Insight](#-key-insight)
-* [🔮 Roadmap](#-roadmap)
+- 🚀 Why Nuwa  
+- ⚙️ Features  
+- 🏗️ Architecture  
+- 📂 Project Structure  
+- ⚡ Getting Started  
+- 📦 Prerequisites  
+- ⚙️ Configuration  
+- ▶️ Run Nuwa  
+- 💡 Example Usage  
+- 🧠 Key Insight  
+- ⚠️ Limitations  
+- 🔮 Roadmap  
 
 ---
 
@@ -31,94 +34,98 @@ Nuwa is an **intent-driven AI agent** that transforms natural language into **wo
 
 Most AI coding tools:
 
-* generate code
-* hope it works
+- generate code  
+- leave validation to the user  
 
-Nuwa does more:
+Nuwa takes a more structured approach:
 
-* understands intent (chat / explain / code)
-* filters unsafe or incorrect outputs
-* fixes common issues automatically
-* deploys directly to hardware
+- interprets user intent (chat / explain / code)  
+- applies constraints to generated output  
+- fixes common mistakes (where possible)  
+- integrates with Arduino CLI for optional deployment  
+
+**Goal:** Not perfection — but reducing obvious errors in embedded workflows.
 
 ---
 
 ## ⚙️ Features
 
-### 🧠 Multi-Mode Agent
+### 🧠 Multi-Mode Interaction
 
-* 💬 Chat mode
-* 📘 Explain mode
-* 🔧 Code mode
-
----
+- 💬 Chat mode (general help)  
+- 📘 Explain mode (code explanation)  
+- 🔧 Code mode (generate / modify / debug)  
 
 ### 🛡️ Guardrails & Validation
 
-* Blocks incorrect APIs (`analogWrite`, ESP-IDF misuse)
-* Enforces correct PWM usage (`ledcSetup`, `ledcAttachPin`, `ledcWrite`)
-* Prevents malformed code
-* Auto-fixes LLM mistakes
-
----
+- Avoids invalid APIs (e.g., `analogWrite` on ESP32)  
+- Encourages correct PWM usage:
+  - `ledcSetup`
+  - `ledcAttachPin`
+  - `ledcWrite`  
+- Flags common issues:
+  - missing `setup()` / `loop()`  
+  - incorrect includes  
+- Attempts basic auto-correction  
 
 ### 🔧 Arduino CLI Integration
 
-* Compile ESP32 code
-* Upload with confirmation
-* Full hardware loop
+- Compile ESP32 sketches  
+- Upload to board (optional confirmation)  
+- Works with local development workflow  
 
----
+### 📂 File-Based Workflow
 
-### 🧩 Structured Prompting
-
-* Rule-based constraints
-* Identity-controlled agent (Nuwa)
-* Context-aware editing
+- Read and modify `.ino` files  
+- Use existing code as context  
+- Supports simple debugging workflows  
 
 ---
 
 ## 🏗️ Architecture
 
-```text id="q3okcs"
-User Input
-   ↓
-Intent Classification
-   ↓
-Prompt Builder
-   ↓
-LLM (Ollama)
-   ↓
-Sanitize + Fix
-   ↓
-Validate
-   ↓
-Compile + Upload
-```
+    User Input
+       ↓
+    Intent Classification
+       ↓
+    Prompt Builder
+       ↓
+    LLM
+       ↓
+    Sanitize
+       ↓
+    Validate
+       ↓
+    Auto-fix (if needed)
+       ↓
+    Output / Compile / Upload
 
 ---
 
 ## 📂 Project Structure
 
-```text id="rb1m4h"
-.
-├── cli.py
-├── agent/
-│   ├── llm.py
-│   ├── intent.py
-│   ├── prompt.py
-│   ├── sanitizer.py
-│   ├── dependencies.py
-│   ├── compiler.py
-│   ├── config.py
-```
+    nuwa-agent/
+    │
+    ├── cli.py
+    ├── agent/
+    │   ├── llm.py
+    │   ├── intent.py
+    │   ├── prompt.py
+    │   ├── sanitizer.py
+    │   ├── validator.py
+    │   ├── read_file.py
+    │   ├── dependencies.py
+    │   ├── compiler.py
+    ├── config.py
+    │
+    └── README.md
 
 ---
 
 ## ⚡ Getting Started
 
-```bash id
-git clone https://github.com/YOUR_USERNAME/nuwa-agent.git
+```bash
+git clone https://github.com/shikhar0708/nuwa-agent.git
 cd nuwa-agent
 ```
 
@@ -128,34 +135,28 @@ cd nuwa-agent
 
 ### 🐍 Python
 
-```bash id="w6d9d7"
+```bash
 pip install requests
 ```
 
----
+### 🧠 Ollama (or compatible LLM)
 
-### 🧠 Ollama
-
-```bash id="1d9l9l"
+```bash
 ollama pull deepseek-coder:6.7b
 ollama run deepseek-coder:6.7b
 ```
 
----
-
 ### 🔧 Arduino CLI
 
-👉 https://arduino.github.io/arduino-cli/
+Install: https://arduino.github.io/arduino-cli/
 
-```bash id="mqv3z3"
+```bash
 arduino-cli version
 ```
 
----
-
 ### 📡 ESP32 Core
 
-```bash id="m5qyx0"
+```bash
 arduino-cli core update-index
 arduino-cli core install esp32:esp32@2.0.17
 ```
@@ -166,13 +167,13 @@ arduino-cli core install esp32:esp32@2.0.17
 
 Edit:
 
-```text id="9m8l7f"
-agent/config.py
+```text
+config.py
 ```
 
-### Required
+Example:
 
-```python id="0mcr6r"
+```python
 PORT = "COM3"
 FQBN = "esp32:esp32:esp32"
 MODEL = "deepseek-coder:6.7b"
@@ -182,7 +183,7 @@ MODEL = "deepseek-coder:6.7b"
 
 ## ▶️ Run Nuwa
 
-```bash id="o5i6d5"
+```bash
 python cli.py
 ```
 
@@ -190,43 +191,50 @@ python cli.py
 
 ## 💡 Example Usage
 
-```text id="ib4f3g"
-You: generate PWM code for LED
-→ Nuwa generates + validates + deploys
-```
-
----
-
-```text id="y4x5js"
-You: explain PWM
-→ Nuwa explains clearly
+```text
+You: generate blink code
+You: generate pwm breathing led
+You: fix main.ino
+You: read main.ino
+You: explain this code
 ```
 
 ---
 
 ## 🧠 Key Insight
 
-> ❌ Raw LLM output is unreliable
-> ✅ LLM + constraints + validation = usable system
+Raw LLM output is often unreliable in embedded contexts.
+
+Adding constraints and validation significantly improves usability.
+
+---
+
+## ⚠️ Limitations
+
+- Validation is rule-based (not exhaustive)  
+- May still produce incorrect or incomplete code  
+- Complex projects may require manual intervention  
+- Hardware issues (wiring, power, etc.) are out of scope  
 
 ---
 
 ## 🔮 Roadmap
 
-* [ ] Memory
-* [ ] Multi-agent roles
-* [ ] Tool suggestions
-* [ ] Web UI
-* [ ] Self-debugging loop
+- Compile-error feedback loop  
+- FastAPI interface  
+- Improved validation rules  
+- Cleaner include handling  
+- Multi-file/project context  
+- Web UI  
 
 ---
 
 ## 🧑‍💻 Author
 
-**Vedic_error**
+**Vedic_Error**
 
 ---
 
 ## ⭐ Support
 
-Give it a star ⭐ if you like it
+If you find this useful, consider giving it a star ⭐
