@@ -2,7 +2,7 @@ def build_prompt(user, intent, last_code="", file_context=""):
     u = user.lower()
 
     # -----------------------------
-    # 🎯 RULE ENGINE (FIXED 🔥)
+    # 🎯 RULE ENGINE
     # -----------------------------
     if "blink" in u and "pwm" not in u:
         rules = """
@@ -28,7 +28,7 @@ def build_prompt(user, intent, last_code="", file_context=""):
 """
 
     # -----------------------------
-    # 📂 FILE CONTEXT
+    # 📂 CONTEXT
     # -----------------------------
     source_code = file_context if file_context else last_code
 
@@ -44,94 +44,99 @@ IMPORTANT:
 """
 
     # -----------------------------
-    # 🔧 GENERATE
+    # 🚨 STRICT OUTPUT CONTRACT
     # -----------------------------
-    if intent == "generate":
-        return f"""
-Generate Arduino ESP32 code.
+    output_contract = """
+STRICT OUTPUT FORMAT (MANDATORY):
+- Output MUST be ONLY valid Arduino C++ code
+- NO explanations
+- NO markdown
+- NO text before or after code
+- NO phrases like "Here is", "Sure", etc.
+- NO special tokens like <| |>
 
-TASK:
-{user}
-
-RULES:
-{rules}
-
-CONSTRAINTS:
-- Use setup() and loop()
-- Pin = 2
-- Do NOT include unused libraries
-- Output ONLY code
+FAIL IF:
+- Any text exists outside code
+- Missing setup() or loop()
+- Unused libraries included
 """
 
     # -----------------------------
-    # ✏️ EDIT
+    # 🧠 TASK BLOCK
     # -----------------------------
-    if intent == "edit":
-        return f"""
-Modify the following ESP32 Arduino code.
+    if intent == "generate":
+        task_block = f"""
+TASK:
+{user}
 
-CODE:
-{source_code}
+- Create COMPLETE working code
+- Include required libraries
+"""
+
+    elif intent == "edit":
+        task_block = f"""
+TASK:
+Modify existing code
 
 REQUEST:
 {user}
 
-RULES:
-{rules}
-
-CONSTRAINTS:
-- Do NOT rewrite from scratch
-- Preserve structure unless necessary
-- Do NOT include unused libraries
-- Return ONLY updated code
-"""
-
-    # -----------------------------
-    # 🐞 DEBUG
-    # -----------------------------
-    if intent == "debug":
-        return f"""
-Fix the following ESP32 Arduino code.
-
 CODE:
 {source_code}
+
+- Preserve structure
+- Do NOT rewrite unless necessary
+"""
+
+    elif intent == "debug":
+        task_block = f"""
+TASK:
+Fix the code
 
 ISSUE:
 {user}
 
-RULES:
-{rules}
+CODE:
+{source_code}
 
-CONSTRAINTS:
-- Fix ONLY what is necessary
+- Fix minimal required parts
 - Do NOT rewrite entire code
-- Do NOT include unused libraries
-- Return ONLY corrected code
 """
 
-    # -----------------------------
-    # 📘 EXPLAIN
-    # -----------------------------
-    if intent == "explain":
+    elif intent == "explain":
         return f"""
 Explain this ESP32 Arduino code clearly:
 
 {source_code}
 """
 
-    # -----------------------------
-    # 🔥 FALLBACK
-    # -----------------------------
-    return f"""
-Generate ESP32 Arduino code.
-
+    else:
+        task_block = f"""
 TASK:
 {user}
+"""
+
+    # -----------------------------
+    # 🧩 FINAL PROMPT
+    # -----------------------------
+    return f"""
+You are an ESP32 Arduino expert.
+
+{output_contract}
 
 RULES:
 {rules}
 
 CONSTRAINTS:
-- Do NOT include unused libraries
-- Return ONLY code
+- Use setup() and loop()
+- Default pin = 2 unless specified
+- Use only necessary libraries
+- Ensure code compiles
+
+{context_block}
+
+{task_block}
+
+FINAL INSTRUCTION:
+Return ONLY raw Arduino C++ code.
 """
